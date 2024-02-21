@@ -15,7 +15,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        return super().create(**validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         instance.model_method()
@@ -31,7 +31,7 @@ class CountryListSerializers(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        return super().create(**validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         instance.model_method()
@@ -75,7 +75,7 @@ class OptionalFieldThroughListSerializers(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        return super().create(**validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         instance.model_method()
@@ -94,7 +94,7 @@ class JobListSerializers(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        return super().create(**validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         instance.model_method()

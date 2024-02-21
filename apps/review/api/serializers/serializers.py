@@ -19,7 +19,7 @@ class ReviewListSerializers(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context.get('request').user
         validated_data['user'] = user
-        return super().create(**validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         instance.model_method()
