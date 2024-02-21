@@ -13,9 +13,9 @@ from rest_framework import permissions
 admin.site.site_url = None
 schema_view = get_schema_view(
     openapi.Info(
-        title="Clinics Backend",
+        title="ADS Backend",
         default_version="v1",
-        description="Clinics Backend",
+        description="ADS Backend",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),

@@ -120,7 +120,8 @@ class JobDetailSerializers(serializers.ModelSerializer):
         return Category.objects.filter(id=obj.category.id).values('name')
 
     def get_city(self, obj):
-        """ get city type. type : list
+        """
+        get city type. type : list
             {
                 "name" : "Barcelona",
                 "country": "Spain"
@@ -129,7 +130,8 @@ class JobDetailSerializers(serializers.ModelSerializer):
         return list(City.objects.filter(id=obj.city.id).values('name', 'country'))
 
     def get_user(self, obj):
-        """ get user details
+        """
+        get user details
             {
                 "email" : "test@test.com",
                 "phone" : "+9989912345678",

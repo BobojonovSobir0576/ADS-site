@@ -56,7 +56,7 @@ class TeamRoleDetailsViews(APIView):
 
     """ Team Role Put View """
     @swagger_extend_schema(fields=['name'], description="Team Role Update", tags=[''])
-    def update(self, request, pk):
+    def put(self, request, pk):
         valid_fields = {"name"}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
@@ -117,7 +117,7 @@ class TeamDetailsViews(APIView):
 
     """ Team Put View """
     @swagger_extend_schema(fields=['name', 'description', 'photo', 'role'], description="Team Update", tags=[''])
-    def update(self, request, pk):
+    def put(self, request, pk):
         valid_fields = {'name', 'description', 'photo', 'role'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
