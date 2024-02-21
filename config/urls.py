@@ -31,18 +31,12 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path("admin/", admin.site.urls),
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "docs/",
-        TemplateView.as_view(
-            template_name="doc.html", extra_context={"schema_url": "api_schema"}
-        ),
-        name="swagger-ui",
-    ),
 
     path('auth/', include('apps.auth_app.urls')),
+    path('ads/', include('apps.ads.urls')),
+    path('review/', include('apps.review.urls')),
+    path('team/', include('apps.team.urls')),
 ]
 
 
