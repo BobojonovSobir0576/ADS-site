@@ -4,9 +4,9 @@ from apps.auth_app.models import CustomUser
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
-    subcategory = models.ForeignKey("self", on_delete=models.PROTECT)
-    icon = models.ImageField(upload_to="path/")
+    name = models.CharField(max_length=100, null=True, blank=True)
+    subcategory = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
+    icon = models.ImageField(upload_to="path/", null=True, blank=True)
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -15,8 +15,8 @@ class Category(models.Model):
 
 
 class Country(models.Model):
-    name = models.CharField(max_length=200)
-    short_name = models.CharField(max_length=4, unique=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    short_name = models.CharField(max_length=4, unique=True, null=True, blank=True)
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -25,9 +25,9 @@ class Country(models.Model):
 
 
 class City(models.Model):
-    name = models.CharField(max_length=200)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    short_name = models.CharField(max_length=4)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
+    short_name = models.CharField(max_length=30, null=True, blank=True)
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -49,9 +49,9 @@ class FieldTypes(models.TextChoices):
 
 class OptionalField(models.Model):
     FieldTypes = FieldTypes
-    name = models.CharField(max_length=30)
-    key = models.CharField(max_length=12)
-    type = models.CharField(max_length=30, choices=FieldTypes.choices, default=FieldTypes.string)
+    name = models.CharField(max_length=30, null=True, blank=True)
+    key = models.CharField(max_length=12, null=True, blank=True)
+    type = models.CharField(max_length=30, choices=FieldTypes.choices, default=FieldTypes.string, null=True, blank=True)
     is_required = models.BooleanField(default=False)
     default = models.TextField(null=True, blank=True)
     max_length = models.IntegerField(null=True, blank=True)
@@ -63,8 +63,8 @@ class OptionalField(models.Model):
 
 
 class OptionalFieldThrough(models.Model):
-    job = models.ForeignKey('Job', on_delete=models.CASCADE)
-    optional_field = models.ForeignKey(OptionalField, on_delete=models.CASCADE)
+    job = models.ForeignKey('Job', on_delete=models.CASCADE, null=True, blank=True)
+    optional_field = models.ForeignKey(OptionalField, on_delete=models.CASCADE, null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     image = models.ImageField(null=True, blank=True, upload_to="path/")
     file = models.FileField(null=True, blank=True, upload_to="path/")
@@ -85,18 +85,18 @@ class JobStatusChoices(models.TextChoices):
 
 class Job(models.Model):
     JobStatusChoices = JobStatusChoices
-    title = models.CharField(max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    city = models.ForeignKey(City, on_delete=models.PROTECT)
-    description = models.TextField(default="")
-    contact_number = models.CharField(max_length=18)
-    email = models.EmailField()
-    name = models.CharField(max_length=200)
-    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
-    status = models.CharField(max_length=30, default=JobStatusChoices.published)
-    photo = models.ImageField(upload_to="path/")
-    date_create = models.DateTimeField(auto_now_add=True)
-    date_update = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    city = models.ForeignKey(City, on_delete=models.PROTECT, null=True, blank=True)
+    description = models.TextField(default="", null=True, blank=True)
+    contact_number = models.CharField(max_length=18, null=True, blank=True)
+    email = models.EmailField( null=True, blank=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
+    status = models.CharField(max_length=30, default=JobStatusChoices.published, null=True, blank=True)
+    photo = models.ImageField(upload_to="path/", null=True, blank=True)
+    date_create = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    date_update = models.DateTimeField(auto_now=True, null=True, blank=True)
     is_vip = models.BooleanField(default=False)
     is_top = models.BooleanField(default=False)
     # rate future

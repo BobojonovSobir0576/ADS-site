@@ -43,7 +43,8 @@ class SimpleJWTAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if any(map(request.path.startswith, ('/admin/', '/static/', '/media/', '/auth/', '/docs/', '/schema/', '/swagger/', '/redoc/', '/team/'))):
+        if any(map(request.path.startswith, ('/admin/', '/static/', '/media/', '/auth/', '/docs/', '/schema/', '/swagger/', '/redoc/',
+                                             '/team/', '/category/', '/categories/', '/cities/', '/city/', '/countries/', '/country/'))):
             return self.get_response(request)
         jwt_auth = JWTAuthentication()
         try:

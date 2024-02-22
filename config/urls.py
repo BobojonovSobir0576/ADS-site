@@ -8,6 +8,7 @@ from drf_spectacular.views import SpectacularAPIView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from apps.ads.api.views import views
 
 
 admin.site.site_url = None
@@ -37,6 +38,18 @@ urlpatterns = [
     path('ads/', include('apps.ads.urls')),
     path('review/', include('apps.review.urls')),
     path('team/', include('apps.team.urls')),
+
+    # category
+    path('categories/', views.CategoryListView.as_view()),
+    path('category/<int:pk>/', views.CategoryDetailView.as_view()),
+
+    # country
+    path('countries/', views.CountryListView.as_view()),
+    path('county/<int:pk>/', views.CountryDetailView.as_view()),
+
+    # city
+    path('cities/', views.CityListView.as_view()),
+    path('city/<int:pk>/', views.CityDetailViews.as_view())
 ]
 
 

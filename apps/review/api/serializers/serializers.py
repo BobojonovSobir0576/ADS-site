@@ -6,7 +6,7 @@ from apps.ads.models import Job
 
 class ReviewListSerializers(serializers.ModelSerializer):
     """ Review create update and details """
-    job = serializers.IntegerField(write_only=True)
+    job = serializers.IntegerField(required=True)
     rating = serializers.IntegerField(max_value=5, min_value=1, write_only=True)
 
     class Meta:

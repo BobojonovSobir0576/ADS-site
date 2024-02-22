@@ -5,8 +5,9 @@ from apps.ads.models import *
 
 class CategoryListSerializers(serializers.ModelSerializer):
     """ Category create update and details """
-    icon = serializers.ImageField(read_only=True, required=True)
-    name = serializers.CharField(write_only=True)
+    icon = serializers.ImageField(required=False)
+    name = serializers.CharField(required=True)
+    subcategory = serializers.IntegerField(allow_null=True, required=False)
 
     class Meta:
         model = Category
@@ -18,8 +19,21 @@ class CategoryListSerializers(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        instance.model_method()
         return super().update(instance, validated_data)
+
+
+class CategoryDetailSerializers(serializers.ModelSerializer):
+    """ Category  details """
+    jobs_set = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = [
+            'id', 'name', 'subcategory', 'icon', 'jobs_set', 'date_create', 'date_update'
+        ]
+
+    def get_jobs_set(self, obj):
+        return list(Job.objects.select_related('category').filter(category=obj.id))
 
 
 class CountryListSerializers(serializers.ModelSerializer):
@@ -40,7 +54,7 @@ class CountryListSerializers(serializers.ModelSerializer):
 
 class CityListSerializers(serializers.ModelSerializer):
     """ City create update and details """
-    country = serializers.IntegerField(write_only=True)
+    country = serializers.IntegerField(required=True)
 
     class Meta:
         model = City
@@ -64,8 +78,8 @@ class OptionalFieldListSerializers(serializers.ModelSerializer):
 
 
 class OptionalFieldThroughListSerializers(serializers.ModelSerializer):
-    job = serializers.IntegerField(write_only=True)
-    image = serializers.ImageField(required=True)
+    job = serializers.IntegerField(required=True)
+    image = serializers.ImageField(required=False)
     file = serializers.FileField(required=True)
 
     class Meta:
@@ -83,7 +97,7 @@ class OptionalFieldThroughListSerializers(serializers.ModelSerializer):
 
 
 class JobListSerializers(serializers.ModelSerializer):
-    photo = serializers.ImageField(required=True)
+    photo = serializers.ImageField(required=False)
 
     class Meta:
         model = Job

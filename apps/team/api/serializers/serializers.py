@@ -21,7 +21,7 @@ class TeamRoleListSerializers(serializers.ModelSerializer):
 class TeamListSerializers(serializers.ModelSerializer):
     """ Team create update"""
 
-    role = serializers.IntegerField(write_only=True)
+    role = serializers.IntegerField(required=True)
     photo = serializers.ImageField(required=True)
 
     class Meta:
@@ -54,7 +54,7 @@ class TeamListSerializers(serializers.ModelSerializer):
 class TeamDetailSerializers(serializers.ModelSerializer):
     """ Team details"""
 
-    role = TeamRoleListSerializers(read_only=True)
+    role = TeamRoleListSerializers(required=True)
 
     class Meta:
         model = Team
