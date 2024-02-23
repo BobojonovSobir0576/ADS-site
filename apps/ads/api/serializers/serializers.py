@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from apps.ads.models import *
@@ -74,7 +75,8 @@ class OptionalFieldListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = OptionalField
-        fields = []
+        fields = ['id', 'name', 'key', 'type', 'is_required', 'default', 'max_length',
+                  'min_length', 'is_active']
 
 
 class OptionalFieldThroughListSerializers(serializers.ModelSerializer):
@@ -92,31 +94,71 @@ class OptionalFieldThroughListSerializers(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        instance.model_method()
         return super().update(instance, validated_data)
+
+
+class OptionalFieldThroughDetailSerializers(serializers.ModelSerializer):
+    job = serializers.SerializerMethodField()
+    optional_field = OptionalFieldListSerializers(read_only=True)
+    class Meta:
+        model = OptionalFieldThrough
+        fields = [
+            'id', 'job', 'optional_field', 'value', 'image', 'file'
+        ]
+
+    def get_job(self, obj):
+        return obj.job.title
 
 
 class JobListSerializers(serializers.ModelSerializer):
     photo = serializers.ImageField(required=False)
+    additionally = serializers.JSONField(required=True, write_only=True)  # Mark as write-only
 
     class Meta:
         model = Job
         fields = [
-            'id', 'title', 'category', 'city', 'description', 'contract_number',
+            'id', 'title', 'category', 'city', 'description', 'contact_number',
             'email', 'name', 'user', 'status', 'photo', 'date_create', 'date_update',
-            'is_top', 'is_vip'
+            'is_top', 'is_vip', 'additionally',  # Include 'additionally' here
         ]
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        """
+        create job additionally
+        [
+            {
+                "optionalFieldID": 1,
+                "value": "something to write",
+                "image": "image send",
+                "file": "file send"
+            }, ...
+        ]
+        """
+        user = self.context.get('request').user
+        additionally = validated_data.pop('additionally', [])
+        job_instance = Job.objects.create(**validated_data, user=user)
+        for item in additionally:
+            optional_field_id = item.get('optionalFieldID')
+            try:
+                optional_field_instance = OptionalField.objects.get(id=optional_field_id)
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError({"optionalFieldID": f"Invalid OptionalField ID: {optional_field_id}"})
+            OptionalFieldThrough.objects.create(
+                job=job_instance,
+                optional_field=optional_field_instance,
+                value=item.get('value'),
+                image=item.get('image'),
+                file=item.get('file')
+            )
+        return job_instance
 
     def update(self, instance, validated_data):
-        instance.model_method()
         return super().update(instance, validated_data)
 
 
 class JobDetailSerializers(serializers.ModelSerializer):
     """ Job details create update and details """
+    optional_field = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     city = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
@@ -124,14 +166,14 @@ class JobDetailSerializers(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = [
-            'id', 'title', 'category', 'city', 'description', 'contract_number',
+            'id', 'title', 'category', 'city', 'description', 'contact_number',
             'email', 'name', 'user', 'status', 'photo', 'date_create', 'date_update',
-            'is_top', 'is_vip'
+            'is_top', 'is_vip', 'optional_field'
         ]
 
     def get_category(self, obj):
         """ get job category. type : str """
-        return Category.objects.filter(id=obj.category.id).values('name')
+        return obj.category.name
 
     def get_city(self, obj):
         """
@@ -141,7 +183,7 @@ class JobDetailSerializers(serializers.ModelSerializer):
                 "country": "Spain"
             }
         """
-        return list(City.objects.filter(id=obj.city.id).values('name', 'country'))
+        return list(City.objects.filter(id=obj.city.id).values('name', 'country'))[0]
 
     def get_user(self, obj):
         """
@@ -152,6 +194,20 @@ class JobDetailSerializers(serializers.ModelSerializer):
                 ...
             }
         """
-        return list(CustomUser.obejcts.filter(id=obj.user.id).values(
+        return list(CustomUser.objects.filter(id=obj.user.id).values(
             'id', 'email', 'phone', 'first_name', 'last_name', 'photo'
-        ))
+        ))[0]
+
+    def get_optional_field(self, obj):
+        optional_fields = OptionalFieldThrough.objects.filter(job=obj)
+        data = OptionalFieldThroughDetailSerializers(optional_fields, many=True).data
+        return data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if 'user' in representation and 'photo' in representation['user']:
+            logo_path = representation['user']['photo']
+            if logo_path and request:
+                representation['user']['photo'] = request.build_absolute_uri(logo_path)
+        return representation

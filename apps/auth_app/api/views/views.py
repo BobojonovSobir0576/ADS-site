@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
@@ -16,7 +16,7 @@ from utils.token import get_token_for_user
 
 
 class GoogleSocialAuthView(GenericAPIView):
-
+    permission_classes = [AllowAny]
     serializer_class = GoogleSocialAuthSerializer
 
     def post(self, request):
@@ -30,7 +30,7 @@ class GoogleSocialAuthView(GenericAPIView):
                        description="Register", tags=['Register'])
 @swagger_schema(serializer=RegisterSerializer)
 class RegisterViews(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         valid_fields = {"first_name", "last_name", 'photo', 'about', 'phone', 'email', 'groups', 'password'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -49,7 +49,7 @@ class RegisterViews(APIView):
 @swagger_extend_schema(fields={"phone", "password"}, description="Login", tags=['Login'])
 @swagger_schema(serializer=LoginSerializer)
 class LoginView(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         expected_fields = {"phone", "password"}
         received_fields = set(request.data.keys())

@@ -104,7 +104,7 @@ class Job(models.Model):
     optional_field = models.ManyToManyField(
         OptionalField,
         through=OptionalFieldThrough,
-        through_fields=('job', 'optional_field')
+        through_fields=('job', 'optional_field'), null=True, blank=True
     )
 
 

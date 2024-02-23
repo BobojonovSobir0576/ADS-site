@@ -1,5 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
@@ -22,4 +24,61 @@ from utils.renderers import UserRenderers
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
 
+class JobListView(APIView, PaginationMethod):
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderers]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        "job_category",
+        "title",
+        "category",
+        "city"
+    ]
 
+    @swagger_extend_schema(fields=['job', 'rating', 'description', 'first_name', 'email'],
+                           description="Team Roles Create", tags=[''])
+    def get(self, request):
+        queryset = Job.objects.select_related('user').filter(user=request.user).order_by('-id')
+        queryset = self.filter_by_title(queryset, request)
+        queryset = self.filter_by_category(queryset, request)
+        queryset = self.filter_by_city(queryset, request)
+        serializers = super().page(queryset, JobDetailSerializers, request)
+        return success_response(serializers.data)
+
+    def filter_by_title(self, queryset, request):
+        title = request.query_params.get("title", '')
+        if title:
+            queryset = queryset.filter(
+                Q(company__title__icontains=title)
+            )
+        return queryset
+
+    def filter_by_category(self, queryset, request):
+        category = request.query_params.get("category", [])
+        if category:
+            ids_category = [int(id_str) for id_str in category.split(",")]
+            queryset = queryset.filter(Q(job_category__in=ids_category))
+        return queryset
+
+    def filter_by_city(self, queryset, request):
+        city = request.query_params.get("city", [])
+        if city:
+            ids_city = [int(id_str) for id_str in city.split(",")]
+            queryset = queryset.filter(Q(job_city__in=ids_city))
+        return queryset
+
+    @swagger_extend_schema(fields=['title', 'category', 'city', 'description', 'contact_number', 'email', 'name',
+                                   'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'],
+                           description="Ads Create", tags=[''])
+    def post(self, request):
+        valid_fields = {'title', 'category', 'city', 'description', 'contact_number', 'email', 'name',
+                                   'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'}
+        unexpected_fields = check_required_key(request, valid_fields)
+        if unexpected_fields:
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        serializers = JobListSerializers(data=request.data, context={'request': request})
+        if serializers.is_valid(raise_exception=True):
+            serializers.save()
+            return success_response(serializers.data)
+        return bad_request_response(serializers.errors)
