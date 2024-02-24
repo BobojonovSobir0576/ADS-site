@@ -14,7 +14,7 @@ from utils.responses import (
     success_created_response,
     success_deleted_response,
 )
-from utils.swaggers import swagger_extend_schema
+
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi

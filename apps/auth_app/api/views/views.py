@@ -12,7 +12,6 @@ from apps.auth_app.api.serializers.serializers import (
 from utils.expected_fields import check_required_key
 from utils.renderers import UserRenderers
 from utils.responses import bad_request_response, success_created_response, success_response, success_deleted_response
-from utils.swaggers import swagger_extend_schema, swagger_schema
 from utils.token import get_token_for_user
 
 
