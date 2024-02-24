@@ -13,8 +13,6 @@ class SocialAuthSerializer(serializers.Serializer):
 
 
 class AuthSocialLoginSerializer(BaseUserSerializer):
-    is_created = serializers.BooleanField(default=False)
-
     class Meta(BaseUserSerializer.Meta):
         fields = BaseUserSerializer.Meta.fields
 

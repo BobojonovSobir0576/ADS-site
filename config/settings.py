@@ -62,9 +62,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'utils.middlewares.middleware.JsonErrorResponseMiddleware',
-    'utils.middlewares.middleware.Custom404Middleware',
-    'utils.middlewares.middleware.SimpleJWTAuthenticationMiddleware',
+    # 'utils.middlewares.middleware.JsonErrorResponseMiddleware',
+    # 'utils.middlewares.middleware.Custom404Middleware',
+    # 'utils.middlewares.middleware.SimpleJWTAuthenticationMiddleware',
+    'utils.middlewares.middleware.DisableCSRFOnAPI',
+
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -162,6 +164,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

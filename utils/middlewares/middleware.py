@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.utils.deprecation import MiddlewareMixin
+from django.middleware.csrf import CsrfViewMiddleware
 from django.conf import settings
 import requests
 
@@ -56,3 +58,8 @@ class SimpleJWTAuthenticationMiddleware:
 
         return self.get_response(request)
 
+
+class DisableCSRFOnAPI(MiddlewareMixin):
+    def process_request(self, request):
+        if request.path.startswith('/auth/social-media/'):  # Adjust the path according to your API endpoint
+            setattr(request, '_dont_enforce_csrf_checks', True)

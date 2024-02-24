@@ -11,6 +11,10 @@ from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.data_generation import generator_password
 from utils.main import object_get_or_none
+import logging
+from django.utils.timezone import now
+
+logger = logging.getLogger(__name__)  # Configure your logger accordingly
 
 
 class TokenService:
@@ -109,7 +113,6 @@ class OauthService:
         Возвращает объект Пользователя и информацию о том, был ли создан новый пользователь
         :return: [User, bool]
         """
-
         try:
             social_auth_class = self.container.get(self.social_media_type)
             social_auth = social_auth_class(self.code)
@@ -117,15 +120,18 @@ class OauthService:
 
             user = object_get_or_none(CustomUser, social_auth_uid=social_user_id)
 
-            if social_user_id:
-                is_created = not bool(user)
-                if not user:
-                    user = self.auth_service.register_user(
-                        email=social_user_email,
-                        auth_type=self.social_media_type,
-                        social_auth_uid=social_user_id,
-                        referral_code=self.referral_code,
-                    )
-                return user, is_created
-        except ValueError as _:
-            raise ValueError(CustomUser.Text.OAUTH_TYPE_INVALID)
+            if not social_user_id or not social_user_email:
+                raise ValueError("Failed to obtain user information from social provider.")
+
+            if user is None:
+                user = self.auth_service.register_user(
+                    email=social_user_email,
+                    social_auth_uid=social_user_id,
+                )
+                return user, True  # Assuming you want to return a tuple indicating the user and whether they were newly created
+            else:
+                return user, False
+        except ValueError as err:
+            print(f"Error during OAuth process: {err}")
+            # Handle the specific error appropriately. You might want to log it or send a more user-friendly message to the frontend.
+            raise ValueError(f"OAuth error: {err}")

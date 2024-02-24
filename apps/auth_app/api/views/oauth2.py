@@ -1,3 +1,5 @@
+from rest_framework.authentication import TokenAuthentication
+
 from apps.auth_app.api.serializers import google_serializers as auth_serializers
 from apps.auth_app.api.serializers import serializers
 from apps.auth_app.api.generic.generic_api_view import GenericAPIView
@@ -8,12 +10,16 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GoogleModelViewSet(GenericAPIView):
     queryset = CustomUser.objects.all()
-    serializer_class = auth_serializers.AuthLoginSerializer
+    serializer_class = auth_serializers.SocialAuthSerializer
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = [TokenAuthentication]
 
     SERIALIZER = {
         "social_media_auth": {
@@ -45,12 +51,12 @@ class GoogleModelViewSet(GenericAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         try:
             social_auth = OauthService(**serializer.data)
+            print(social_auth)
             user, is_created = social_auth.get_social_auth()
             data = self.get_serializer_response(user, context=self.get_serializer_context())
-            data["is_created"] = is_created
+            print(data)
             return Response(data=data, status=status.HTTP_201_CREATED)
         except ValueError as e:
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST, exception=True)
