@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserManager(BaseUserManager):
@@ -43,9 +44,24 @@ class SocialThrough(models.Model):
 
 
 class CustomUser(AbstractUser):
+
+    class AuthType(models.TextChoices):
+        LOGIN_PASSWORD_AUTH = "login_password_auth", _("Email and Password Authentication")
+        GOOGLE_AUTH = "google_auth", _("Google Authentication")
+
+    class Text:
+        WRONG_PASSWORD_OR_LOGIN_ENTERED = "Wrong login or password"
+        USER_WITH_SUCH_EMAIL_ALREADY_EXISTS = "A user with this email already exists"
+        USER_WITH_SUCH_EMAIL_DOES_NOT_EXIST = "A user with this email already exists"
+
+        OAUTH_CODE_INVALID = "Access token has expired"
+        OAUTH_TOKEN_EXPIRED = "Invalid social network type entered or provider not registered"
+        OAUTH_TYPE_INVALID = "The entered code is out of date or has already been used"
+
     phone = models.CharField(max_length=18, unique=True)
     email = models.EmailField(max_length=255, unique=True)
     username = None
+    social_auth_uid = models.CharField(max_length=100, verbose_name="Social UID", blank=True, null=True)
     is_agree_terms = models.BooleanField(default=False)
     photo = models.ImageField(upload_to="path/")
     about = models.TextField(default="", null=True, blank=True)

@@ -1,28 +1,56 @@
-from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.hashers import make_password
-from rest_framework.generics import GenericAPIView
-from rest_framework.utils import json
-from rest_framework.views import APIView
-from rest_framework import status
-import requests
-from rest_framework_simplejwt.tokens import RefreshToken
+from apps.auth_app.api.serializers import google_serializers as auth_serializers
+from apps.auth_app.api.serializers import serializers
+from apps.auth_app.api.generic.generic_api_view import GenericAPIView
+from apps.auth_app.api.services.serivices import OauthService
+from apps.auth_app.models import CustomUser
+# from apps.companies.services.users import AuthService, EmailService, OauthService, TokenService, UserService
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions, status
 from rest_framework.response import Response
 
-from apps.auth_app.api.serializers.serializers import GoogleSocialAuthSerializer
-from apps.auth_app.models import CustomUser
-from allauth.account.views import SignupView
-from allauth.socialaccount.models import SocialApp
-from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
-from django.contrib.auth.models import Group
 
+class GoogleModelViewSet(GenericAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = auth_serializers.AuthLoginSerializer
+    permission_classes = (permissions.AllowAny,)
 
-class GoogleSocialAuthView(GenericAPIView):
+    SERIALIZER = {
+        "social_media_auth": {
+            "request": auth_serializers.SocialAuthSerializer,
+            "response": serializers.InformationSerializer,
+        },
+    }
 
-    serializer_class = GoogleSocialAuthSerializer
+    @swagger_auto_schema(
+        request_body=SERIALIZER["social_media_auth"]["request"],
+        responses={
+            201: SERIALIZER["social_media_auth"]["response"],
+            404: openapi.Response(
+                description="Пример ответа при неверном логине или пароле",
+                examples={"application/json": {"detail": CustomUser.Text.WRONG_PASSWORD_OR_LOGIN_ENTERED}},
+            ),
+        },
+    )
+    def social_media_auth(self, request, *args, **kwargs):
+        """
+        For social media authentication use this endpoint
+        need to enter code and social_media_type
+            code(get the field social media authentication url)
+            social_media_type(need to enter social media type ['google_auth', 'yandex_auth', 'vk_auth', 'mail_ru_auth']
 
-    def post(self, request):
-
-        serializer = self.serializer_class(data=request.data)
+        Additional docs and url for get code:
+            google_auth:
+                - https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?client_id=164988481338-dadkp1t0dnkiauagsiq088qm4a519cnu.apps.googleusercontent.com&scope=email&response_type=code&redirect_uri=https://example.com&access_type=offline
+        """
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = ((serializer.validated_data)['auth_token'])
-        return Response(data, status=status.HTTP_200_OK)
+
+        try:
+            social_auth = OauthService(**serializer.data)
+            user, is_created = social_auth.get_social_auth()
+            data = self.get_serializer_response(user, context=self.get_serializer_context())
+            data["is_created"] = is_created
+            return Response(data=data, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST, exception=True)
