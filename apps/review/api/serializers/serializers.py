@@ -13,8 +13,9 @@ class ReviewListSerializers(serializers.ModelSerializer):
         model = Review
         fields = [
             'id', 'job', 'user', 'rating', 'description', 'first_name', 'email',
-            'data_create', 'update_create'
+            'date_create', 'date_update'
         ]
+        read_only_fields = ('date_created',)
 
     def create(self, validated_data):
         user = self.context.get('request').user
@@ -35,7 +36,7 @@ class ReviewDetailSerializers(serializers.ModelSerializer):
         model = Review
         fields = [
             'id', 'job', 'user', 'rating', 'description', 'first_name', 'email',
-            'data_create', 'update_create'
+            'date_create', 'date_update'
         ]
 
     def get_job(self, obj):

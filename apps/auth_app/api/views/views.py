@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -19,6 +20,10 @@ class GoogleSocialAuthView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = GoogleSocialAuthSerializer
 
+    @swagger_auto_schema(request_body=GoogleSocialAuthSerializer,
+                         operation_description="Login with google",
+                         tags=['Google'],
+                         responses={201: GoogleSocialAuthSerializer(many=False)})
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -26,11 +31,13 @@ class GoogleSocialAuthView(GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-@swagger_extend_schema(fields={"first_name", "last_name", 'photo', 'about', 'phone', 'email'},
-                       description="Register", tags=['Register'])
-@swagger_schema(serializer=RegisterSerializer)
 class RegisterViews(APIView):
     permission_classes = [AllowAny]
+
+    @swagger_auto_schema(request_body=RegisterSerializer,
+                         operation_description="User create",
+                         tags=['Sign Up'],
+                         responses={201: RegisterSerializer(many=False)})
     def post(self, request):
         valid_fields = {"first_name", "last_name", 'photo', 'about', 'phone', 'email', 'groups', 'password'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -46,10 +53,13 @@ class RegisterViews(APIView):
         return bad_request_response(serializer.errors)
 
 
-@swagger_extend_schema(fields={"phone", "password"}, description="Login", tags=['Login'])
-@swagger_schema(serializer=LoginSerializer)
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
+    @swagger_auto_schema(request_body=LoginSerializer,
+                         operation_description="User login",
+                         tags=['Sign In'],
+                         responses={201: LoginSerializer(many=False)})
     def post(self, request, *args, **kwargs):
         expected_fields = {"phone", "password"}
         received_fields = set(request.data.keys())
@@ -75,17 +85,21 @@ class LoginView(APIView):
         return get_token_for_user(user)
 
 
-@swagger_extend_schema(fields={"first_name", "last_name", 'photo', 'about', 'phone', 'email'}, description="Custom User Profile",
-                       tags=['Profile'])
-@swagger_schema(serializer=RegisterSerializer)
 class ProfileViews(APIView):
     permission_classes = [IsAuthenticated]
     render_classes = [UserRenderers]
 
+    @swagger_auto_schema(operation_description="Retrieve a user",
+                         tags=['Profile'],
+                         responses={200: InformationSerializer(many=True)})
     def get(self, request):
         serializer = InformationSerializer(request.user, context={'request': request} )
         return success_response(serializer.data)
 
+    @swagger_auto_schema(request_body=RegisterSerializer,
+                         operation_description="User update",
+                         tags=['Profile'],
+                         responses={200: RegisterSerializer(many=False)})
     def put(self, request):
         valid_fields = {"first_name", "last_name", 'photo', 'about', 'phone', 'email'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -99,6 +113,9 @@ class ProfileViews(APIView):
             return success_response(serializer.data)
         return bad_request_response(serializer.errors)
 
+    @swagger_auto_schema(operation_description="Delete a user",
+                         tags=['Profile'],
+                         responses={204: 'No content'})
     def delete(self, request):
         request.user.delete()
         return success_deleted_response("User deleted")

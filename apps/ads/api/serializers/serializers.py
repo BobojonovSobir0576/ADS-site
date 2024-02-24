@@ -60,7 +60,7 @@ class CityListSerializers(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = [
-            'id', 'name', 'country', 'shrt_name', 'date_create', 'date_update'
+            'id', 'name', 'country', 'short_name', 'date_create', 'date_update'
         ]
 
     def create(self, validated_data):

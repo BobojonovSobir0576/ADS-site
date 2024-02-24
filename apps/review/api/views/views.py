@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
@@ -26,7 +27,10 @@ class ReviewListView(APIView, PaginationMethod):
     renderer_classes = [UserRenderers]
 
     """ Review Get View """
-    @swagger_extend_schema(fields=[], description="User Reviews Get", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a list of reviewer",
+                         tags=['Review'],
+                         responses={200: ReviewDetailSerializers(many=True)})
     def get(self, request):
         try:
             queryset = Review.objects.select_related('user').filter(
@@ -39,7 +43,11 @@ class ReviewListView(APIView, PaginationMethod):
         return success_response(serializer.data)
 
     """ Review Post View """
-    @swagger_extend_schema(fields=['job', 'rating', 'description', 'first_name', 'email'], description="Team Roles Create", tags=[''])
+
+    @swagger_auto_schema(request_body=ReviewListSerializers,
+                         operation_description="Review create",
+                         tags=['Review'],
+                         responses={201: ReviewListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'job', 'rating', 'description', 'first_name', 'email'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -57,14 +65,21 @@ class ReviewDetailsViews(APIView):
     permission_classes = [AllowAny]
 
     """ Review Get View """
-    @swagger_extend_schema(fields=[], description="Review", tags=[''])
+
+    @swagger_auto_schema(operation_description="Review a category",
+                         tags=['Review'],
+                         responses={200: ReviewListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(Review, pk=pk)
         serializer = ReviewDetailSerializers(queryset)
         return success_response(serializer.data)
 
     """ Review Put View """
-    @swagger_extend_schema(fields=['job', 'rating', 'description', 'first_name', 'email'], description="Review Update", tags=[''])
+
+    @swagger_auto_schema(request_body=ReviewListSerializers,
+                         operation_description="Review update",
+                         tags=['Review'],
+                         responses={200: ReviewListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {'job', 'rating', 'description', 'first_name', 'email'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -81,7 +96,10 @@ class ReviewDetailsViews(APIView):
         return bad_request_response(serializer.errors)
 
     """ Review Delete View """
-    @swagger_extend_schema(fields=[], description="Review Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a review",
+                         tags=['Review'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(Review, pk=pk)
         queryset.delete()

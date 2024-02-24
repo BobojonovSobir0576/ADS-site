@@ -16,20 +16,29 @@ from utils.responses import (
 )
 from utils.swaggers import swagger_extend_schema, swagger_schema
 from utils.expected_fields import check_required_key
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class TeamRoleListViews(APIView):
     permission_classes = [AllowAny]
 
     """ Team Role Get View """
-    @swagger_extend_schema(fields=[], description="Team Roles", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a list of team role",
+                         tags=['Team Role'],
+                         responses={200: TeamRoleListSerializers(many=True)})
     def get(self, request):
         queryset = TeamRole.objects.all().order_by('-id')
         serializer = TeamRoleListSerializers(queryset, many=True)
         return success_response(serializer.data)
 
     """ Team Role Post View """
-    @swagger_extend_schema(fields=["name"], description="Team Roles Create", tags=[''])
+
+    @swagger_auto_schema(request_body=TeamRoleListSerializers,
+                         operation_description="Team Role create",
+                         tags=['Team Role'],
+                         responses={201: TeamRoleListSerializers(many=False)})
     def post(self, request):
         valid_fields = {"name"}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -48,14 +57,21 @@ class TeamRoleDetailsViews(APIView):
     permission_classes = [AllowAny]
 
     """ Team Role Get View """
-    @swagger_extend_schema(fields=[], description="Team Role", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a team role",
+                         tags=['Team Role'],
+                         responses={200: TeamRoleListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(TeamRole, pk=pk)
         serializer = TeamRoleListSerializers(queryset)
         return success_response(serializer.data)
 
     """ Team Role Put View """
-    @swagger_extend_schema(fields=['name'], description="Team Role Update", tags=[''])
+
+    @swagger_auto_schema(request_body=TeamRoleListSerializers,
+                         operation_description="Team Role update",
+                         tags=['Team Role'],
+                         responses={200: TeamRoleListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {"name"}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -72,7 +88,10 @@ class TeamRoleDetailsViews(APIView):
         return bad_request_response(serializer.errors)
 
     """ Team Role Delete View """
-    @swagger_extend_schema(fields=[], description="Team Role Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a Team Role",
+                         tags=['Team Role'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(TeamRole, pk=pk)
         queryset.delete()
@@ -83,14 +102,21 @@ class TeamListViews(APIView):
     permission_classes = [AllowAny]
 
     """ Team Get View """
-    @swagger_extend_schema(fields=[], description="Teams", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a list of Team",
+                         tags=['Team'],
+                         responses={200: TeamDetailSerializers(many=True)})
     def get(self, request):
         queryset = Team.objects.all().order_by('-id')
         serializer = TeamDetailSerializers(queryset, many=True)
         return success_response(serializer.data)
 
     """ Team Post View """
-    @swagger_extend_schema(fields=['name', 'description', 'photo', 'role'], description="Teams", tags=[''])
+
+    @swagger_auto_schema(request_body=TeamListSerializers,
+                         operation_description="Team create",
+                         tags=['Team'],
+                         responses={201: TeamListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'name', 'description', 'photo', 'role'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -109,14 +135,21 @@ class TeamDetailsViews(APIView):
     permission_classes = [AllowAny]
 
     """ Team Get View """
-    @swagger_extend_schema(fields=[], description="Team", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a Team",
+                         tags=['Team'],
+                         responses={200: TeamDetailSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(Team, pk=pk)
         serializer = TeamDetailSerializers(queryset)
         return success_response(serializer.data)
 
     """ Team Put View """
-    @swagger_extend_schema(fields=['name', 'description', 'photo', 'role'], description="Team Update", tags=[''])
+
+    @swagger_auto_schema(request_body=TeamListSerializers,
+                         operation_description="Team update",
+                         tags=['Team'],
+                         responses={200: TeamListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {'name', 'description', 'photo', 'role'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -133,7 +166,10 @@ class TeamDetailsViews(APIView):
         return bad_request_response(serializer.errors)
 
     """ Team Delete View """
-    @swagger_extend_schema(fields=[], description="Team Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a Team",
+                         tags=['Team'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(Team, pk=pk)
         queryset.delete()

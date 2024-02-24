@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
@@ -22,6 +23,8 @@ from utils.swaggers import swagger_extend_schema
 from utils.expected_fields import check_required_key
 from utils.renderers import UserRenderers
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class JobListView(APIView, PaginationMethod):
@@ -36,8 +39,17 @@ class JobListView(APIView, PaginationMethod):
         "city"
     ]
 
-    @swagger_extend_schema(fields=['job', 'rating', 'description', 'first_name', 'email'],
-                           description="Team Roles Create", tags=[''])
+    job_category_param = openapi.Parameter('job_category', openapi.IN_QUERY, description="Filter by job category",
+                                           type=openapi.TYPE_STRING)
+    title_param = openapi.Parameter('title', openapi.IN_QUERY, description="Filter by title", type=openapi.TYPE_STRING)
+    category_param = openapi.Parameter('category', openapi.IN_QUERY, description="Filter by category",
+                                       type=openapi.TYPE_STRING)
+    city_param = openapi.Parameter('city', openapi.IN_QUERY, description="Filter by city", type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[job_category_param, title_param, category_param, city_param],
+                         operation_description="Retrieve a list of jobs",
+                         tags=['Ads'],
+                         responses={200: JobListSerializers(many=True)})
     def get(self, request):
         queryset = Job.objects.select_related('user').filter(user=request.user).order_by('-id')
         queryset = self.filter_by_title(queryset, request)
@@ -68,9 +80,10 @@ class JobListView(APIView, PaginationMethod):
             queryset = queryset.filter(Q(job_city__in=ids_city))
         return queryset
 
-    @swagger_extend_schema(fields=['title', 'category', 'city', 'description', 'contact_number', 'email', 'name',
-                                   'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'],
-                           description="Ads Create", tags=[''])
+    @swagger_auto_schema(request_body=JobListSerializers,
+                         operation_description="Ads Create",
+                         tags=['Ads'],
+                         responses={201: JobListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'title', 'category', 'city', 'description', 'contact_number', 'email', 'name',
                                    'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'}
@@ -82,3 +95,5 @@ class JobListView(APIView, PaginationMethod):
             serializers.save()
             return success_response(serializers.data)
         return bad_request_response(serializers.errors)
+
+

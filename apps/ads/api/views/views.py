@@ -16,13 +16,17 @@ from utils.responses import (
 )
 from utils.swaggers import swagger_extend_schema
 from utils.expected_fields import check_required_key
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class CategoryListView(APIView):
     permission_classes = [AllowAny]
     """ Category Get View """
 
-    @swagger_extend_schema(fields=[], description="Category", tags=[''])
+    @swagger_auto_schema(operation_description="Retrieve a list of categories",
+                         tags=['Categories'],
+                         responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
         queryset = Category.objects.all().order_by('-id')
         serializers = CategoryListSerializers(queryset, many=True,
@@ -30,7 +34,11 @@ class CategoryListView(APIView):
         return success_response(serializers.data)
 
     """ Category Post View """
-    @swagger_extend_schema(fields=['name', 'subcategory', 'icon'], description="Category Post", tags=[''])
+
+    @swagger_auto_schema(request_body=CategoryListSerializers,
+                         operation_description="Category create",
+                         tags=['Categories'],
+                         responses={201: CategoryListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'name', 'subcategory', 'icon'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -47,14 +55,21 @@ class CategoryListView(APIView):
 class CategoryDetailView(APIView):
     permission_classes = [AllowAny]
     """ Category Get View """
-    @swagger_extend_schema(fields=[], description="Category", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a category",
+                         tags=['Categories'],
+                         responses={200: CategoryListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(Category, pk=pk)
         serializers = CategoryDetailSerializers(queryset, context={'request': request})
         return success_response(serializers.data)
 
     """ Category Put View """
-    @swagger_extend_schema(fields=['name', 'subcategory', 'icon'], description="Category Put", tags=[''])
+
+    @swagger_auto_schema(request_body=CategoryListSerializers,
+                         operation_description="Category update",
+                         tags=['Categories'],
+                         responses={200: CategoryListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {'name', 'subcategory', 'icon'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -70,7 +85,10 @@ class CategoryDetailView(APIView):
         return bad_request_response(serializers.errors)
 
     """ Category Delete View """
-    @swagger_extend_schema(fields=[], description="Category Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a category",
+                         tags=['Categories'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(Category, pk=pk)
         queryset.delete()
@@ -81,7 +99,9 @@ class CountryListView(APIView):
     permission_classes = [AllowAny]
     """ Category Get View """
 
-    @swagger_extend_schema(fields=[], description="Country", tags=[''])
+    @swagger_auto_schema(operation_description="Retrieve a list of country",
+                         tags=['Country'],
+                         responses={200: CountryListSerializers(many=True)})
     def get(self, request):
         queryset = Country.objects.all().order_by('-id')
         serializers = CountryListSerializers(queryset, many=True,
@@ -89,7 +109,11 @@ class CountryListView(APIView):
         return success_response(serializers.data)
 
     """ Category Post View """
-    @swagger_extend_schema(fields=['name'], description="Category Post", tags=[''])
+
+    @swagger_auto_schema(request_body=CountryListSerializers,
+                         operation_description="Country create",
+                         tags=['Country'],
+                         responses={201: CountryListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'name'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -106,14 +130,21 @@ class CountryListView(APIView):
 class CountryDetailView(APIView):
     permission_classes = [AllowAny]
     """ Country Get View """
-    @swagger_extend_schema(fields=[], description="Country", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a country",
+                         tags=['Country'],
+                         responses={200: CategoryListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(Country, pk=pk)
         serializers = CountryListSerializers(queryset, context={'request': request})
         return success_response(serializers.data)
 
     """ Country Put View """
-    @swagger_extend_schema(fields=['name'], description="Country Put", tags=[''])
+
+    @swagger_auto_schema(request_body=CountryListSerializers,
+                         operation_description="Country update",
+                         tags=['Country'],
+                         responses={200: CountryListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {'name'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -129,7 +160,10 @@ class CountryDetailView(APIView):
         return bad_request_response(serializers.errors)
 
     """ Country Delete View """
-    @swagger_extend_schema(fields=[], description="Country Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a country",
+                         tags=['Country'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(Country, pk=pk)
         queryset.delete()
@@ -138,17 +172,23 @@ class CountryDetailView(APIView):
 
 class CityListView(APIView):
     permission_classes = [AllowAny]
-    """ Category Get View """
+    """ City Get View """
 
-    @swagger_extend_schema(fields=[], description="Country", tags=[''])
+    @swagger_auto_schema(operation_description="Retrieve a list of cities",
+                         tags=['City'],
+                         responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
         queryset = Country.objects.all().order_by('-id')
         serializers = CountryListSerializers(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
 
-    """ Category Post View """
-    @swagger_extend_schema(fields=['name'], description="Category Post", tags=[''])
+    """ City Post View """
+
+    @swagger_auto_schema(request_body=CountryListSerializers,
+                         operation_description="City create",
+                         tags=['City'],
+                         responses={201: CountryListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'name'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -165,14 +205,21 @@ class CityListView(APIView):
 class CityDetailViews(APIView):
     permission_classes = [AllowAny]
     """ City Get View """
-    @swagger_extend_schema(fields=[], description="City", tags=[''])
+
+    @swagger_auto_schema(operation_description="Retrieve a city",
+                         tags=['City'],
+                         responses={200: CityListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(City, pk=pk)
         serializers = CityListSerializers(queryset, context={'request': request})
         return success_response(serializers.data)
 
     """ City Put View """
-    @swagger_extend_schema(fields=['name'], description="City Put", tags=[''])
+
+    @swagger_auto_schema(request_body=CityListSerializers,
+                         operation_description="City update",
+                         tags=['City'],
+                         responses={201: CityListSerializers(many=False)})
     def put(self, request, pk):
         valid_fields = {'name'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -188,7 +235,10 @@ class CityDetailViews(APIView):
         return bad_request_response(serializers.errors)
 
     """ City Delete View """
-    @swagger_extend_schema(fields=[], description="City Delete", tags=[''])
+
+    @swagger_auto_schema(operation_description="Delete a city",
+                         tags=['City'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(City, pk=pk)
         queryset.delete()
