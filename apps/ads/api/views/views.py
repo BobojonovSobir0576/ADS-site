@@ -17,7 +17,7 @@ from utils.responses import (
 
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+
 
 
 class CategoryListView(APIView):

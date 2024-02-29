@@ -44,8 +44,13 @@ class JobListView(APIView, PaginationMethod):
     category_param = openapi.Parameter('category', openapi.IN_QUERY, description="Filter by category",
                                        type=openapi.TYPE_STRING)
     city_param = openapi.Parameter('city', openapi.IN_QUERY, description="Filter by city", type=openapi.TYPE_STRING)
+    is_top_param = openapi.Parameter('isTop', openapi.IN_QUERY, description="Filter by top ads",
+                                     type=openapi.TYPE_BOOLEAN)
+    is_pop_param = openapi.Parameter('isPop', openapi.IN_QUERY, description="Filter by popular ads",
+                                     type=openapi.TYPE_BOOLEAN)
 
-    @swagger_auto_schema(manual_parameters=[job_category_param, title_param, category_param, city_param],
+    @swagger_auto_schema(manual_parameters=[job_category_param, title_param, category_param, city_param, is_top_param,
+                                            is_pop_param],
                          operation_description="Retrieve a list of jobs",
                          tags=['Ads'],
                          responses={200: JobListSerializers(many=True)})
@@ -54,6 +59,8 @@ class JobListView(APIView, PaginationMethod):
         queryset = self.filter_by_title(queryset, request)
         queryset = self.filter_by_category(queryset, request)
         queryset = self.filter_by_city(queryset, request)
+        queryset = self.filter_is_top_ads(queryset, request)
+        queryset = self.filter_is_pop_ads(queryset, request)
         serializers = super().page(queryset, JobDetailSerializers, request)
         return success_response(serializers.data)
 
@@ -78,6 +85,22 @@ class JobListView(APIView, PaginationMethod):
             ids_city = [int(id_str) for id_str in city.split(",")]
             queryset = queryset.filter(Q(job_city__in=ids_city))
         return queryset
+
+    def filter_is_top_ads(self, queryset, request):
+        is_top = request.query_params.get('isTop', 'False').lower() == 'true'
+        action_map = {
+            True: lambda qs: qs.filter(is_pop=True),
+            False: lambda qs: qs
+        }
+        return action_map[is_top](queryset)
+
+    def filter_is_pop_ads(self, queryset, request):
+        is_pop = request.query_params.get('isPop', 'False').lower() == 'true'
+        action_map = {
+            True: lambda qs: qs.filter(is_pop=True),
+            False: lambda qs: qs
+        }
+        return action_map[is_pop](queryset)
 
     @swagger_auto_schema(request_body=JobListSerializers,
                          operation_description="Ads Create",
