@@ -19,7 +19,6 @@ from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
 
 
-
 class CategoryListView(APIView):
     permission_classes = [AllowAny]
     """ Category Get View """

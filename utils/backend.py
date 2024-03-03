@@ -10,7 +10,7 @@ class CustomBackend(ModelBackend):
         if phone:
             query |= Q(phone=phone)
         if email:
-            query |= Q(username=email)
+            query |= Q(email=email)
         try:
             user = User.objects.get(query)
         except User.DoesNotExist:

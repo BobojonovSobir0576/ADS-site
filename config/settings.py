@@ -13,9 +13,6 @@ ALLOWED_HOSTS = ["*"]
 
 AUTHENTICATION_BACKENDS = [
     'utils.backend.CustomBackend',
-    'django.contrib.auth.backends.ModelBackend',
-    "social_core.backends.facebook.FacebookOAuth2",
-    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 INSTALLED_APPS = [
@@ -90,23 +87,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "ads",
-        "USER": "postgres",
-        "PASSWORD": "1",
-        "HOST": "localhost",
-        "PORT": 5432,
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "ads",
+#         "USER": "postgres",
+#         "PASSWORD": "1",
+#         "HOST": "localhost",
+#         "PORT": 5432,
+#     }
+# }
 
 
 AUTH_PASSWORD_VALIDATORS = [

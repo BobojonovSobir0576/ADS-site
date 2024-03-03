@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from apps.team.models import *
-from apps.team.api.serializers.serializers import  (
+from apps.team.api.serializers.serializers import (
     TeamRoleListSerializers,
     TeamListSerializers,
     TeamDetailSerializers
@@ -173,4 +173,5 @@ class TeamDetailsViews(APIView):
         queryset = get_object_or_404(Team, pk=pk)
         queryset.delete()
         return success_deleted_response('Successfully deleted')
+
 
