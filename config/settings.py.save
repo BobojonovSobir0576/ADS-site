@@ -13,6 +13,9 @@ ALLOWED_HOSTS = ["*"]
 
 AUTHENTICATION_BACKENDS = [
     'utils.backend.CustomBackend',
+    'django.contrib.auth.backends.ModelBackend',
+#    "social_core.backends.facebook.FacebookOAuth2",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 INSTALLED_APPS = [
@@ -37,6 +40,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.facebook',
     'rest_framework.authtoken',
 
     #apps
@@ -60,7 +65,7 @@ MIDDLEWARE = [
     'utils.middlewares.middleware.JsonErrorResponseMiddleware',
     'utils.middlewares.middleware.Custom404Middleware',
     'utils.middlewares.middleware.SimpleJWTAuthenticationMiddleware',
-    'utils.middlewares.middleware.DisableCSRFOnAPI',
+   #'utils.middlewares.middleware.DisableCSRFOnAPI',
 
 ]
 
