@@ -7,7 +7,8 @@ from rest_framework.views import APIView
 from apps.auth_app.api.serializers.serializers import (
     RegisterSerializer,
     InformationSerializer,
-    LoginSerializer, GoogleSocialAuthSerializer
+    LoginSerializer, GoogleSocialAuthSerializer,
+    UpdateSerializer
 )
 from utils.expected_fields import check_required_key
 from utils.renderers import UserRenderers
@@ -100,13 +101,13 @@ class ProfileViews(APIView):
                          tags=['Profile'],
                          responses={200: RegisterSerializer(many=False)})
     def put(self, request):
-        valid_fields = {"first_name", "last_name", 'photo', 'about', 'phone', 'email'}
+        valid_fields = {"first_name", "last_name", 'photo', 'about', 'phone', 'email', 'password'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        serializer = RegisterSerializer(request.user, data=request.data, partial=True,
-                                              context={'avatar': request.FILES.get('avatar', None), 'request': request})
+        serializer = UpdateSerializer(request.user, data=request.data, partial=True,
+                                              context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)

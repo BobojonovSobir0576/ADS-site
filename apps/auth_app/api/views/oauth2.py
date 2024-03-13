@@ -53,10 +53,8 @@ class GoogleModelViewSet(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             social_auth = OauthService(**serializer.data)
-            print(social_auth)
             user, is_created = social_auth.get_social_auth()
             data = self.get_serializer_response(user, context=self.get_serializer_context())
-            print(data)
             return Response(data=data, status=status.HTTP_201_CREATED)
         except ValueError as e:
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST, exception=True)

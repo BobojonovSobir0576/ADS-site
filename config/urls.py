@@ -9,6 +9,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from apps.ads.api.views import views
+from rest_framework_simplejwt import views as jwt_views
 
 
 admin.site.site_url = None
@@ -33,6 +34,7 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("admin/", admin.site.urls),
+    path('refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 
     path('auth/', include('apps.auth_app.urls')),
     path('ads/', include('apps.ads.urls')),

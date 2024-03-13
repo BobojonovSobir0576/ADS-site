@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
+from jsonschema._keywords import required
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.validators import UniqueValidator
@@ -42,7 +43,7 @@ class BaseUserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     groups = serializers.IntegerField(required=True)
-    photo = serializers.ImageField(write_only=True)
+    photo = serializers.ImageField(required=False)
     password = serializers.CharField(max_length=50, min_length=1, write_only=True)
 
     class Meta(BaseUserSerializer.Meta):
@@ -68,17 +69,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UpdateSerializer(BaseUserSerializer):
-    first_name = serializers.CharField(max_length=50, validators=[MaxLengthValidator(limit_value=50, message="First name cannot exceed 50 characters.")])
-    last_name = serializers.CharField(max_length=50, validators=[MaxLengthValidator(limit_value=50, message="Last name cannot exceed 50 characters.")])
+    first_name = serializers.CharField(max_length=50, validators=[
+        MaxLengthValidator(limit_value=50, message="First name cannot exceed 50 characters.")])
+    last_name = serializers.CharField(max_length=50, validators=[
+        MaxLengthValidator(limit_value=50, message="Last name cannot exceed 50 characters.")])
+    password = serializers.CharField(max_length=50, required=False)
     photo = serializers.ImageField(write_only=False, allow_null=True)
 
     class Meta(BaseUserSerializer.Meta):
-        fields = BaseUserSerializer.Meta.fields + ["first_name", "last_name", 'categories']
+        fields = BaseUserSerializer.Meta.fields + ["first_name", "last_name", 'photo',
+                                                   'password']  # Removed 'categories'
 
     def update(self, instance, validated_data):
-        if validated_data:
-            instance.photo = instance.photo
-        instance.photo = validated_data['photo']
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+            validated_data.pop('password')
+        if 'photo' in validated_data:
+            instance.photo = validated_data.get('photo', instance.photo)
+
         instance = super(UpdateSerializer, self).update(instance, validated_data)
         instance.save()
         return instance
