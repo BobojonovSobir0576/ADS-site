@@ -119,3 +119,4 @@ class ProfileViews(APIView):
     def delete(self, request):
         request.user.delete()
         return success_deleted_response("User deleted")
+

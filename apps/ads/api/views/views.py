@@ -6,7 +6,7 @@ from apps.ads.models import *
 from apps.ads.api.serializers.serializers import (
     CategoryListSerializers,
     CountryListSerializers, CityListSerializers,
-    CategoryDetailSerializers
+    CategoryDetailSerializers, CitySerializer
 )
 from utils.responses import (
     bad_request_response,
@@ -177,8 +177,8 @@ class CityListView(APIView):
                          tags=['City'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
-        queryset = Country.objects.all().order_by('-id')
-        serializers = CountryListSerializers(queryset, many=True,
+        queryset = City.objects.all().order_by('-id')
+        serializers = CitySerializer(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
 
@@ -194,7 +194,7 @@ class CityListView(APIView):
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        serializers = CountryListSerializers(data=request.data, context={'request': request})
+        serializers = CityListSerializers(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return success_created_response(serializers.data)
@@ -210,7 +210,7 @@ class CityDetailViews(APIView):
                          responses={200: CityListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(City, pk=pk)
-        serializers = CityListSerializers(queryset, context={'request': request})
+        serializers = CitySerializer(queryset, context={'request': request})
         return success_response(serializers.data)
 
     """ City Put View """

@@ -55,7 +55,6 @@ class CountryListSerializers(serializers.ModelSerializer):
 
 class CityListSerializers(serializers.ModelSerializer):
     """ City create update and details """
-    country = serializers.IntegerField(required=True)
 
     class Meta:
         model = City
@@ -69,6 +68,16 @@ class CityListSerializers(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.model_method()
         return super().update(instance, validated_data)
+
+
+class CitySerializer(serializers.ModelSerializer):
+    country = CountryListSerializers(read_only=True)
+
+    class Meta:
+        model = City
+        fields = [
+            'id', 'name', 'country', 'short_name', 'date_create', 'date_update'
+        ]
 
 
 class OptionalFieldListSerializers(serializers.ModelSerializer):

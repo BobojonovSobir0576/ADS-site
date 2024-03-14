@@ -55,7 +55,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         groups_data = validated_data.pop("groups", None)
         user = CustomUser.objects.create_user(**validated_data)
-        user.avatar = self.context.get('avatar')
+        user.avatar = validated_data['photo']
         user.set_password(validated_data['password'])
         user.photo = validated_data['photo']
         if groups_data:
@@ -74,11 +74,28 @@ class UpdateSerializer(BaseUserSerializer):
     last_name = serializers.CharField(max_length=50, validators=[
         MaxLengthValidator(limit_value=50, message="Last name cannot exceed 50 characters.")])
     password = serializers.CharField(max_length=50, required=False)
-    photo = serializers.ImageField(write_only=False, allow_null=True)
+    photo = serializers.ImageField(write_only=False, required=False)
+    phone = serializers.CharField(max_length=50, required=False)
+    email = serializers.EmailField(required=False)
 
     class Meta(BaseUserSerializer.Meta):
         fields = BaseUserSerializer.Meta.fields + ["first_name", "last_name", 'photo',
-                                                   'password']  # Removed 'categories'
+                                                   'password',]  # Removed 'categories'
+
+    def validate(self, attrs):
+        phone = attrs.get('phone', None)
+        email = attrs.get('email', None)
+
+        if not phone and not email:
+            raise serializers.ValidationError("Either a phone number or an email must be provided.")
+
+        if phone and CustomUser.objects.filter(phone=phone).exists():
+            raise serializers.ValidationError("This phone number is already in use.")
+
+        if email and CustomUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError("This email is already in use.")
+
+        return attrs
 
     def update(self, instance, validated_data):
         if 'password' in validated_data:
