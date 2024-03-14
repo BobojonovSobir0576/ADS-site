@@ -27,9 +27,8 @@ from drf_yasg import openapi
 
 
 class JobListView(APIView, PaginationMethod):
+    permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
-    renderer_classes = [UserRenderers]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         "job_category",
@@ -55,7 +54,7 @@ class JobListView(APIView, PaginationMethod):
                          tags=['Ads'],
                          responses={200: JobListSerializers(many=True)})
     def get(self, request):
-        queryset = Job.objects.select_related('user').filter(user=request.user).order_by('-id')
+        queryset = Job.objects.all().order_by('-id')
         queryset = self.filter_by_title(queryset, request)
         queryset = self.filter_by_category(queryset, request)
         queryset = self.filter_by_city(queryset, request)
@@ -102,13 +101,18 @@ class JobListView(APIView, PaginationMethod):
         }
         return action_map[is_pop](queryset)
 
+
+class AddsCreateView(APIView):
+    permission_classes = [IsAuthenticated, AllowAny]
+    renderer_classes = [UserRenderers]
+
     @swagger_auto_schema(request_body=JobListSerializers,
                          operation_description="Ads Create",
                          tags=['Ads'],
                          responses={201: JobListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'title', 'category', 'city', 'description', 'contact_number', 'email', 'name',
-                                   'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'}
+                        'user', 'status', 'photo', 'date_create', 'date_update', 'is_top', 'is_vip', 'additionally'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
