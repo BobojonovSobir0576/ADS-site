@@ -167,3 +167,20 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
 
         return register_social_user(
             provider=provider, user_id=user_id, email=email, name=name)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=18)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_phone(self, value):
+        if not CustomUser.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("User with this phone number does not exist.")
+        return value
+
+    def save(self):
+        phone = self.validated_data['phone']
+        new_password = self.validated_data['new_password']
+        user = CustomUser.objects.get(phone=phone)
+        user.set_password(new_password)
+        user.save()

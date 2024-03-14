@@ -8,7 +8,7 @@ from apps.auth_app.api.serializers.serializers import (
     RegisterSerializer,
     InformationSerializer,
     LoginSerializer, GoogleSocialAuthSerializer,
-    UpdateSerializer
+    UpdateSerializer, ResetPasswordSerializer
 )
 from utils.expected_fields import check_required_key
 from utils.renderers import UserRenderers
@@ -120,3 +120,20 @@ class ProfileViews(APIView):
         request.user.delete()
         return success_deleted_response("User deleted")
 
+
+class ResetPasswordView(APIView):
+    @swagger_auto_schema(request_body=ResetPasswordSerializer,
+                         operation_description="Reset Password",
+                         tags=['Profile'],
+                         responses={200: ResetPasswordSerializer(many=False)})
+    def post(self, request, *args, **kwargs):
+        valid_fields = {'phone', 'password'}
+        unexpected_fields = check_required_key(request, valid_fields)
+        if unexpected_fields:
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return success_response('Password has been reset successfully.')
+        return bad_request_response(serializer.errors)
