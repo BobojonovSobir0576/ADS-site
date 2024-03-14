@@ -25,16 +25,18 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
 class CategoryDetailSerializers(serializers.ModelSerializer):
     """ Category  details """
-    jobs_set = serializers.SerializerMethodField()
+    subcategory = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
         fields = [
-            'id', 'name', 'subcategory', 'icon', 'jobs_set', 'date_create', 'date_update'
+            'id', 'name', 'subcategory', 'icon', 'date_create', 'date_update'
         ]
 
-    def get_jobs_set(self, obj):
-        return list(Job.objects.select_related('category').filter(category=obj.id))
+    def get_subcategory(self, obj):
+        if obj.subcategory is None:
+            return obj.subcategory
+        return CategoryDetailSerializers(obj.subcategory).data
 
 
 class CountryListSerializers(serializers.ModelSerializer):
@@ -127,8 +129,8 @@ class JobListSerializers(serializers.ModelSerializer):
         model = Job
         fields = [
             'id', 'title', 'category', 'city', 'description', 'contact_number',
-            'email', 'name', 'user', 'status', 'photo', 'date_create', 'date_update',
-            'is_top', 'is_vip', 'additionally',  # Include 'additionally' here
+            'email', 'name', 'photo', 'date_create', 'date_update',
+            'additionally',
         ]
 
     def create(self, validated_data):
@@ -162,7 +164,47 @@ class JobListSerializers(serializers.ModelSerializer):
         return job_instance
 
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        user = self.context.get('request').user
+        additionally_data = validated_data.pop('additionally', [])
+
+        # Update the Job instance fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.user = user  # Assuming you want to update the user as well
+        instance.save()
+
+        # Process the additionally data
+        if additionally_data:
+            existing_ids = [item['id'] for item in additionally_data if 'id' in item]
+            for item in additionally_data:
+                if 'id' in item and OptionalFieldThrough.objects.filter(id=item['id']).exists():
+                    # Update existing OptionalFieldThrough instance
+                    optional_instance = OptionalFieldThrough.objects.get(id=item['id'])
+                    optional_instance.value = item.get('value', optional_instance.value)
+                    optional_instance.image = item.get('image', optional_instance.image)
+                    optional_instance.file = item.get('file', optional_instance.file)
+                    optional_instance.save()
+                else:
+                    # Create new OptionalFieldThrough instance
+                    optional_field_id = item.get('optionalFieldID')
+                    try:
+                        optional_field_instance = OptionalField.objects.get(id=optional_field_id)
+                    except ObjectDoesNotExist:
+                        raise serializers.ValidationError(
+                            {"optionalFieldID": f"Invalid OptionalField ID: {optional_field_id}"})
+                    OptionalFieldThrough.objects.create(
+                        job=instance,
+                        optional_field=optional_field_instance,
+                        value=item.get('value'),
+                        image=item.get('image'),
+                        file=item.get('file')
+                    )
+
+            # Delete OptionalFieldThrough instances that were not included in the update
+            if existing_ids:
+                instance.optionallyfieldthrough_set.exclude(id__in=existing_ids).delete()
+
+        return instance
 
 
 class JobDetailSerializers(serializers.ModelSerializer):

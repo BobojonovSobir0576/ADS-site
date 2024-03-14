@@ -6,7 +6,7 @@ from apps.ads.models import *
 from apps.ads.api.serializers.serializers import (
     CategoryListSerializers,
     CountryListSerializers, CityListSerializers,
-    CategoryDetailSerializers, CitySerializer
+    CategoryDetailSerializers, CitySerializer, OptionalFieldListSerializers
 )
 from utils.responses import (
     bad_request_response,
@@ -242,3 +242,17 @@ class CityDetailViews(APIView):
         queryset = get_object_or_404(City, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")
+
+
+class OptionalFieldListView(APIView):
+    permission_classes = [AllowAny]
+    """ OptionalField Get View """
+
+    @swagger_auto_schema(operation_description="Retrieve a list of optional Field",
+                         tags=['Optional Field'],
+                         responses={200: OptionalFieldListSerializers(many=True)})
+    def get(self, request):
+        queryset = OptionalField.objects.all().order_by('-id')
+        serializers = OptionalFieldListSerializers(queryset, many=True,
+                                              context={'request': request})
+        return success_response(serializers.data)

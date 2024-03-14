@@ -11,6 +11,7 @@ from rest_framework import permissions
 from apps.ads.api.views import views
 from rest_framework_simplejwt import views as jwt_views
 
+from apps.ads.api.views.job_views import MyAdsListViews
 
 admin.site.site_url = None
 schema_view = get_schema_view(
@@ -40,6 +41,7 @@ urlpatterns = [
     path('ads/', include('apps.ads.urls')),
     path('review/', include('apps.review.urls')),
     path('team/', include('apps.team.urls')),
+    path('myads/', MyAdsListViews.as_view()),
 
     # category
     path('categories/', views.CategoryListView.as_view()),
