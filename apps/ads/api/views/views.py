@@ -28,7 +28,7 @@ class CategoryListView(APIView):
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
         queryset = Category.objects.all().order_by('-id')
-        serializers = CategoryListSerializers(queryset, many=True,
+        serializers = CategoryDetailSerializers(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
 
