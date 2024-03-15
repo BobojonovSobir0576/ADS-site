@@ -122,12 +122,14 @@ class ProfileViews(APIView):
 
 
 class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
     @swagger_auto_schema(request_body=ResetPasswordSerializer,
                          operation_description="Reset Password",
                          tags=['Profile'],
                          responses={200: ResetPasswordSerializer(many=False)})
     def post(self, request, *args, **kwargs):
-        valid_fields = {'phone', 'password'}
+        valid_fields = {'email', 'password'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

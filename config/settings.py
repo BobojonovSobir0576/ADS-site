@@ -233,3 +233,11 @@ GOOGLE_CLIENT_SECRET = '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'
 
 REST_USE_JWT = True
 JWT_AUTH = {"JWT_RESPONSE_PAYLOAD_HANDLER": "authentification.utils.jwt_response_payload_handler"}
+
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "sobirbobojonov2000@gmail.com"
+EMAIL_HOST_PASSWORD = "rhngiswryyybicyo"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

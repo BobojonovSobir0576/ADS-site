@@ -11,6 +11,8 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 
 from apps.auth_app.api.register import register_social_user
+from apps.auth_app.email_utils import Util
+from apps.auth_app.generate_password import generate_random_string
 from apps.auth_app.models import (
     CustomUser,
 )
@@ -43,7 +45,7 @@ class BaseUserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     groups = serializers.IntegerField(required=True)
-    photo = serializers.ImageField(required=False)
+    photo = serializers.ImageField(required=False, default=None)
     password = serializers.CharField(max_length=50, min_length=1, write_only=True)
 
     class Meta(BaseUserSerializer.Meta):
@@ -170,17 +172,27 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    phone = serializers.CharField(max_length=18)
-    new_password = serializers.CharField(write_only=True)
+    email = serializers.EmailField()
 
     def validate_phone(self, value):
-        if not CustomUser.objects.filter(phone=value).exists():
-            raise serializers.ValidationError("User with this phone number does not exist.")
+        if not CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
         return value
 
     def save(self):
-        phone = self.validated_data['phone']
-        new_password = self.validated_data['new_password']
-        user = CustomUser.objects.get(phone=phone)
-        user.set_password(new_password)
+        email = self.validated_data['email']
+        generate_password = generate_random_string()
+        user = CustomUser.objects.get(email=email)
+        user.set_password(generate_password)
         user.save()
+        self.send_verification_email(user, generate_password)
+
+    def send_verification_email(self, user_instance, generate_password):
+        email_body = f"Hi {user_instance.first_name} {user_instance.last_name},\nThis is your new generation password: {generate_password} \n Thanks..."
+        email_data = {
+            "email_body": email_body,
+            "to_email": user_instance.email,
+            "email_subject": "Reset password",
+        }
+        Util.send(email_data)
+
